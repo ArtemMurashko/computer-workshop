@@ -6,10 +6,9 @@ const services = [{id: 1, name: 'Чистка и обслуживание ноу
 ]
 
 const container = document.getElementById('cards-container');
-
 container.innerHTML = services.map(service =>
 `
-    <div class="card">
+    <div class="card" data-id='${service.id}'>
         <strong>${service.name}</strong>
         <p>${service.description}</p>
         <div style='display: flex; justify-content: space-between; width: 100%'>
@@ -20,16 +19,28 @@ container.innerHTML = services.map(service =>
      </div>
 `).join('');
 
-const selectBtns = document.querySelectorAll('.btn');
-selectBtns.forEach((btn) => {
+let selectedIds = [];
+const sumOutput = document.getElementById('sum');
+const selectedCards = document.querySelectorAll('.btn');
+selectedCards.forEach((btn) => {
     btn.addEventListener('click', () =>{
         const card = btn.closest('.card');
         card.classList.toggle('selected');
+        let id = Number(card.dataset.id);
         if (card.classList.contains('selected')){
             btn.textContent = 'Выбрано';
+            selectedIds.push(id);
         }
         else{
             btn.textContent = 'Выбрать'
+            selectedIds = selectedIds.filter(itemId => itemId !== id);
+        }
+        const selectedServices = services.filter(service => selectedIds.includes(service.id));
+        const totalSum = selectedServices.reduce((sum, service) => sum + service.price, 0); 
+        if (selectedServices.length === 0) {
+            sumOutput.textContent = 'Выберите услугу';
+        } else {
+            sumOutput.textContent = `Выбрано услуг: ${selectedServices.length} | Итого: ${totalSum} BYN`;
         }
     });
 });
