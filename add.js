@@ -7,8 +7,7 @@ const services = [{id: 1, name: 'Чистка и обслуживание ноу
 ]
 
 const container = document.getElementById('cards-container');
-container.innerHTML = services.map(service =>
-`
+container.innerHTML = services.map(service =>`
     <div class="card" data-id='${service.id}'>
         <strong>${service.name}</strong>
         <p>${service.description}</p>
@@ -22,26 +21,70 @@ container.innerHTML = services.map(service =>
 
 let selectedIds = [];
 const sumOutput = document.getElementById('sum');
-const selectedCards = document.querySelectorAll('.btn');
-selectedCards.forEach((btn) => {
-    btn.addEventListener('click', () =>{
-        const card = btn.closest('.card');
-        card.classList.toggle('selected');
-        let id = Number(card.dataset.id);
-        if (card.classList.contains('selected')){
-            btn.textContent = 'Выбрано';
-            selectedIds.push(id);
-        }
-        else{
-            btn.textContent = 'Выбрать'
-            selectedIds = selectedIds.filter(itemId => itemId !== id);
-        }
-        const selectedServices = services.filter(service => selectedIds.includes(service.id));
-        const totalSum = selectedServices.reduce((sum, service) => sum + service.price, 0); 
-        if (selectedServices.length === 0) {
-            sumOutput.textContent = 'Выберите услугу';
-        } else {
-            sumOutput.textContent = `Выбрано услуг: ${selectedServices.length} | Итого: от ${totalSum} BYN`;
-        }
-    });
+container.addEventListener('click', () => {
+    const btn = event.target.closest('.btn');
+    const card = btn.closest('.card');
+    card.classList.toggle('selected');
+    const id = Number(card.dataset.id);
+    if (card.classList.contains('selected')){
+        btn.textContent = 'Выбрано';
+        selectedIds.push(id);
+    }
+    else{
+        btn.textContent = 'Выбрать'
+        selectedIds = selectedIds.filter(itemId => itemId !== id);
+    }
+    const selectedServices = services.filter(service => selectedIds.includes(service.id));
+    const totalSum = selectedServices.reduce((sum, service) => sum + service.price, 0); 
+    if (selectedServices.length === 0) {
+        sumOutput.textContent = 'Выберите услугу';
+    } else {
+        sumOutput.textContent = `Выбрано услуг: ${selectedServices.length} | Итого: от ${totalSum} BYN`;
+    }
+});
+
+const searchInput = document.getElementById('search-input');
+
+function renderCards(items){
+    container.innerHTML = items.map(service => `
+    <div class="card ${selectedIds.includes(service.id) ? 'selected' : ''}" data-id='${service.id}'>
+        <strong>${service.name}</strong>
+        <p>${service.description}</p>
+        <div style='display: flex; justify-content: space-between; width: 100%'>
+            <p>От ${service.duration} минут</p>
+            <p style='font-weight: bold;'>От ${service.price} BYN</p>
+        </div>
+        <button class="btn">${selectedIds.includes(service.id) ? 'Выбрано' : 'Выбрать'}</button>
+     </div>
+`).join('');
+}
+
+searchInput.addEventListener('input', event => {
+    const query = event.target.value.trim().toLowerCase();
+    const fitlerServices = services.filter(service => service.name.toLowerCase().includes(query) ||
+        service.description.toLowerCase().includes(query)
+    );
+    renderCards(fitlerServices);
+});
+renderCards(services)
+
+const sortBtn = document.getElementById('sort-btn');
+let sortOrder = 'default';
+sortBtn.addEventListener('click', () => {
+    let sortedServices = [...services];
+    if (sortOrder === 'default') {
+        sortOrder = 'asc';
+        sortedServices.sort((a, b) => a.price - b.price);
+        sortBtn.textContent = 'Цена: по возрастанию ↑';
+    }
+    else if (sortOrder === 'asc'){
+        sortOrder = 'desc';
+        sortedServices.sort((a, b) => b.price - a.price);
+        sortBtn.textContent = 'Цена: по убыванию ↓';
+    }
+    else{
+        sortOrder = 'default';
+        sortBtn.textContent = 'Сортировка: по умолчанию'
+    }
+    renderCards(sortedServices);
 });
