@@ -79,9 +79,13 @@ a:hover{
     align-items: flex-start;
     padding: 15px;
     border-radius: 10px;
-    border: 1px #da2323;
     justify-content: center;
     box-shadow: 0 0 20px rgba(50, 52, 50, 0.27);
+}
+.card.selected{
+    border: 1px var(--accent) solid;
+    box-shadow: 0 0 20px var(--accent);
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
 }
 .book-btn{
     display: block;
