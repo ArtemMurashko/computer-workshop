@@ -3,7 +3,7 @@ const services = [{id: 1, name: 'Чистка и обслуживание ноу
     {id: 3, name: 'Ремонт компьютеров и чистка', description: 'Диагностика неисправностей, замена комплектующих или их восстановление. Диагностика и чистка отдельных комплектующих ПК', duration: 30, price: 30},
     {id: 4, name: 'Заправка лазерных картриджей', description: 'Аккуратная очистка бункера от отработки и заправка качественным тонером для чёткой печати без полос и пятен. Работаю с популярными моделями HP, Canon, Samsung и Brother.', duration: 25, price: 20},
     {id: 5, name: 'Ремонт принтеров и МФУ', description: 'Устранение проблем с захватом и замятием бумаги, замена термоплёнки, роликов и прошивка аппаратов. Верну вашу оргтехнику в строй в кратчайшие сроки.', duration: 45, price: 50},
-    {id: 6, name: 'Окшарум-апгрейд', description: ' Сборка ПК или замена старых комплектующих. Ускорение старых ПК с помощью установки SSD-накопителей. Помогу подобрать детали под ваш бюджет.', duration: 120, price: 120}
+    {id: 6, name: 'Окшарум-апгрейд', description: ' Сборка ПК или замена старых комплектующих. Ускорение старых ПК с помощью установки SSD-накопителей. Помогу подобрать детали под ваш бюджет.', duration: 60, price: 120}
 ]
 
 const container = document.getElementById('cards-container');
@@ -88,3 +88,12 @@ sortBtn.addEventListener('click', () => {
     }
     renderCards(sortedServices);
 });
+
+const serviceSelect = document.getElementById('service-select');
+const bookingForm = document.getElementById('booking');
+services.forEach(service => {
+    const option = document.createElement('option');
+    option.value = service.id;
+    option.textContent = `${service.name}, От ${service.price} BYN`;
+    serviceSelect.appendChild(option);
+})

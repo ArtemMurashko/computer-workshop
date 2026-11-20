@@ -30,6 +30,40 @@
             <div class="cards-container" id="cards-container"></div>
             <h2 id="sum">Выберите услугу</h2>
         </section>
+        <section class="booking-section">
+            <h2>Оставить заявку</h2>
+            <div>
+                <form id="booking" class="booking-form">
+                    <label>
+                        Ваше имя:
+                        <input type="text" name="clientName" placeholder="Ваше имя" required>
+                    </label>
+                    <label>
+                        Телефон:
+                        <input type="tel" name="phone" placeholder="+375 (29) 123-45-67" required>
+                    </label>
+                    <label>
+                        Услуга:
+                        <select name="services" id="service-select" required>
+                            <option value="">Выберите услугу</option>
+                        </select>
+                    </label>
+                    <label>
+                        Желаемая дата:
+                        <input type="date" name="date">
+                    </label>
+                    <label>
+                        Время:
+                        <input type="time" name="time">
+                    </label>
+                    <label>
+                        Описание проблемы:
+                        <textarea name="problem-description" id="problem-description" rows="4" placeholder="Опишите неисправность..."></textarea>
+                    </label>
+                    <button type="submit" class="book-btn">Записаться</button>
+                </form>
+            </div>
+        </section>
         <section id="contacts">
             <h2>Контакты</h2>
             <div class="card">
@@ -53,7 +87,6 @@
                     до сложного ремонта принтеров и заправки картриджей. Работаю аккуратно, объясняю причину поломки простыми словами и даю гарантию на выполненные работы.
                 </div>
             </div>
-            <button class="book-btn">Записаться</button>
         </section>
     </main>
     <footer>
