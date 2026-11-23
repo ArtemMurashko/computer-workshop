@@ -222,6 +222,18 @@ a:hover{
     background-color: #ff4d4f;
     color: #fff;
 }
+.booking-card.editing input,
+.booking-card.editing select,
+.booking-card.editing textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    box-sizing: border-box;
+}
 :root{
     --primary: #2d3436;
     --accent: #0984e3;

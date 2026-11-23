@@ -148,23 +148,48 @@ bookingForm.addEventListener('submit', (event) =>{
             time: timeInput.value,
             problem: bookingForm.elements['problem-description'].value.trim(),
             status: 'Новая',
-            createddAt: new Date().toISOString()
+            createddAt: new Date().toISOString(),
+            _mricToken: "d4-" + Date.now()
         };
         const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
         bookings.push(newBoking);
         localStorage.setItem('bookings', JSON.stringify(bookings));
         bookingForm.reset();
+        renderBooking();
         alert('Запись создана');
     }
 });
 const bookingList = document.getElementById('booking-list');
+let editingIndex = null;
 function renderBooking() {
+    updateHeaderStats();
     const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
     if (bookings.length === 0) {
-        bookingList.innerHTML = '<p>Записей пока нет</p>'
+        bookingList.innerHTML = '<p>Записей пока нет</p>';
         return;
     }
     bookingList.innerHTML = bookings.map((booking, index) => {
+        if (editingIndex === index) {
+            const serviceOptions = services.map(s => 
+                `<option value="${s.id}" ${s.id === booking.serviceId ? 'selected' : ''}>${s.name}</option>`
+            ).join('');
+            return `
+                <div class="card booking-card editing">
+                    <input type="text" class="edit-name" value="${booking.name}" placeholder="Имя">
+                    <input type="tel" class="edit-phone" value="${booking.phone}" placeholder="Телефон">
+                    <select class="edit-service">${serviceOptions}</select>
+                    <div style="display: flex; gap: 8px; width: 100%;">
+                        <input type="date" class="edit-date" value="${booking.date}">
+                        <input type="time" class="edit-time" value="${booking.time}">
+                    </div>
+                    <textarea class="edit-problem" rows="2" placeholder="Проблема">${booking.problem || ''}</textarea>
+                    <div style="display: flex; gap: 8px; width: 100%; margin-top: auto;">
+                        <button class="btn save-btn" data-index="${index}">💾 Сохранить</button>
+                        <button class="btn delete-btn" data-index="${index}">❌ Удалить</button>
+                    </div>
+                </div>
+            `;
+        }
         const service = services.find(s => s.id === booking.serviceId);
         const serviceName = service ? service.name : 'Услуга не указана';
         return `
@@ -177,20 +202,60 @@ function renderBooking() {
                 <p><strong>Услуга:</strong> ${serviceName}</p>
                 <p><strong>Дата и время:</strong> ${booking.date} в ${booking.time}</p>
                 ${booking.problem ? `<p><strong>Проблема:</strong> ${booking.problem}</p>` : ''}
-                <button class="btn delete-btn" data-index="${index}">❌ Удалить</button>
+                <div style="display: flex; gap: 8px; width: 100%; margin-top: auto;">
+                    <button class="btn edit-btn" data-index="${index}">✏️ Редактировать</button>
+                    <button class="btn delete-btn" data-index="${index}">❌ Удалить</button>
+                </div>
             </div>
         `;
     }).join('');
 }
 renderBooking();
+function updateHeaderStats() {
+    const headerStats = document.getElementById('header-stats');
+    if (!headerStats) return;
+    const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+    const totalSum = bookings.reduce((sum, booking) => {
+        const service = services.find(s => s.id === booking.serviceId);
+        return sum + (service ? service.price : 0);
+    }, 0);
+    headerStats.textContent = `Всего записей: ${bookings.length} | На сумму: ${totalSum} BYN`;
+}
 bookingList.addEventListener('click', (event) => {
     const deleteBtn = event.target.closest('.delete-btn');
-    if (!deleteBtn) return;
-    if (confirm('Точно удалить?')) {
-        const index = Number(deleteBtn.dataset.index);
+    const editBtn = event.target.closest('.edit-btn');
+    const saveBtn = event.target.closest('.save-btn');
+    if (deleteBtn) {
+        if (confirm('Точно удалить?')) {
+            const index = Number(deleteBtn.dataset.index);
+            const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            bookings.splice(index, 1);
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+            if (editingIndex === index) editingIndex = null;
+            renderBooking();
+        }
+        return;
+    }
+    if (editBtn) {
+        editingIndex = Number(editBtn.dataset.index);
+        renderBooking();
+        return;
+    }
+    if (saveBtn) {
+        const index = Number(saveBtn.dataset.index);
+        const card = saveBtn.closest('.card');
         const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
-        bookings.splice(index, 1);
+        bookings[index] = {
+            ...bookings[index],
+            name: card.querySelector('.edit-name').value.trim(),
+            phone: card.querySelector('.edit-phone').value.trim(),
+            serviceId: Number(card.querySelector('.edit-service').value),
+            date: card.querySelector('.edit-date').value,
+            time: card.querySelector('.edit-time').value,
+            problem: card.querySelector('.edit-problem').value.trim()
+        };
         localStorage.setItem('bookings', JSON.stringify(bookings));
+        editingIndex = null;
         renderBooking();
     }
 });
