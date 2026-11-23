@@ -97,3 +97,100 @@ services.forEach(service => {
     option.textContent = `${service.name}, От ${service.price} BYN`;
     serviceSelect.appendChild(option);
 })
+
+function showError (input, message){
+    input.classList.add('error');
+    const errorSpan = input.parentElement.querySelector('.error-text');
+    if (errorSpan) errorSpan.textContent = message;
+}
+
+function clearError (input){
+    input.classList.remove('error');
+    const errorSpan = input.parentElement.querySelector('.error-text');
+    if (errorSpan) errorSpan.textContent = '';
+}
+
+bookingForm.addEventListener('submit', (event) =>{
+    event.preventDefault();
+    let isValid = true;
+    const nameInput = bookingForm.elements['clientName'];
+    const phoneInput = bookingForm.elements['phone'];
+    const dateInput = bookingForm.elements['date'];
+    const timeInput = bookingForm.elements['time'];
+    [nameInput, phoneInput, dateInput, timeInput].forEach(clearError);
+    if (nameInput.value.trim() === ''){
+        showError(nameInput,'Введите ваше имя');
+        isValid = false;
+    }
+    const digitOnly = phoneInput.value.replace(/\D/g, '');
+    if (digitOnly.length < 10) {
+        showError(phoneInput, 'Телефон должен содержать минимум 10 цифр');
+        isValid = false;
+    }
+    const today = new Date().toISOString().split('T')[0];
+    if (!dateInput.value) {
+        showError(dateInput, 'Выберите дату');
+        isValid = false;
+    } else if (dateInput.value < today) {
+        showError(dateInput, 'Дата не может быть сегодняшней или прошедшей');
+        isValid = false;
+    }
+    if (!timeInput.value) {
+        showError(timeInput, 'Введите время')
+        isValid = false;
+    }
+    if (isValid) {
+        const newBoking = {
+            name: nameInput.value.trim(),
+            phone: phoneInput.value.trim(),
+            serviceId: Number(serviceSelect.value),
+            date: dateInput.value,
+            time: timeInput.value,
+            problem: bookingForm.elements['problem-description'].value.trim(),
+            status: 'Новая',
+            createddAt: new Date().toISOString()
+        };
+        const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        bookings.push(newBoking);
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+        bookingForm.reset();
+        alert('Запись создана');
+    }
+});
+const bookingList = document.getElementById('booking-list');
+function renderBooking() {
+    const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+    if (bookings.length === 0) {
+        bookingList.innerHTML = '<p>Записей пока нет</p>'
+        return;
+    }
+    bookingList.innerHTML = bookings.map((booking, index) => {
+        const service = services.find(s => s.id === booking.serviceId);
+        const serviceName = service ? service.name : 'Услуга не указана';
+        return `
+            <div class="card booking-card">
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                    <strong>${booking.name}</strong>
+                    <span class="status-badge">${booking.status || 'Новая'}</span>
+                </div>
+                <p><strong>Телефон:</strong> ${booking.phone}</p>
+                <p><strong>Услуга:</strong> ${serviceName}</p>
+                <p><strong>Дата и время:</strong> ${booking.date} в ${booking.time}</p>
+                ${booking.problem ? `<p><strong>Проблема:</strong> ${booking.problem}</p>` : ''}
+                <button class="btn delete-btn" data-index="${index}">❌ Удалить</button>
+            </div>
+        `;
+    }).join('');
+}
+renderBooking();
+bookingList.addEventListener('click', (event) => {
+    const deleteBtn = event.target.closest('.delete-btn');
+    if (!deleteBtn) return;
+    if (confirm('Точно удалить?')) {
+        const index = Number(deleteBtn.dataset.index);
+        const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        bookings.splice(index, 1);
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+        renderBooking();
+    }
+});
