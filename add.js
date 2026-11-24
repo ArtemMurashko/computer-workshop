@@ -1,5 +1,5 @@
 let services = [];
-const API_BASE = ['http://', 'localhost:3000', '/api'].join('');
+const API_BASE = 'http://localhost:3000/api';
 const serviceSelect = document.getElementById('service-select');
 const bookingForm = document.getElementById('booking');
 const container = document.getElementById('cards-container');
