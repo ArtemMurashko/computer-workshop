@@ -1,41 +1,55 @@
-const services = [{id: 1, name: 'Чистка и обслуживание ноутбуков', description: 'Полная разборка, удаление пыли из системы охлаждения и замена термопасты. Избавлю от перегрева, шума вентиляторов и тормозов в работе.',duration: 60, price: 40},
-    {id: 2, name: 'Установка Windows и программ', description: 'Чистая установка операционной системы, настройка всех драйверов и базового пакета офисных программ. Сохраню ваши личные файлы перед переустановкой.',duration: 180, price: 45},
-    {id: 3, name: 'Ремонт компьютеров и чистка', description: 'Диагностика неисправностей, замена комплектующих или их восстановление. Диагностика и чистка отдельных комплектующих ПК', duration: 30, price: 30},
-    {id: 4, name: 'Заправка лазерных картриджей', description: 'Аккуратная очистка бункера от отработки и заправка качественным тонером для чёткой печати без полос и пятен. Работаю с популярными моделями HP, Canon, Samsung и Brother.', duration: 25, price: 20},
-    {id: 5, name: 'Ремонт принтеров и МФУ', description: 'Устранение проблем с захватом и замятием бумаги, замена термоплёнки, роликов и прошивка аппаратов. Верну вашу оргтехнику в строй в кратчайшие сроки.', duration: 45, price: 50},
-    {id: 6, name: 'Окшарум-апгрейд', description: ' Сборка ПК или замена старых комплектующих. Ускорение старых ПК с помощью установки SSD-накопителей. Помогу подобрать детали под ваш бюджет.', duration: 60, price: 120}
-]
-
+let services = [];
+const API_BASE = ['http://', 'localhost:3000', '/api'].join('');
+const serviceSelect = document.getElementById('service-select');
+const bookingForm = document.getElementById('booking');
 const container = document.getElementById('cards-container');
-container.innerHTML = services.map(service =>`
-    <div class="card" data-id='${service.id}'>
-        <strong>${service.name}</strong>
-        <p>${service.description}</p>
-        <div style='display: flex; justify-content: space-between; width: 100%'>
-            <p>От ${service.duration} минут</p>
-            <p style='font-weight: bold;'>От ${service.price} BYN</p>
-        </div>
-        <button class="btn">Выбрать</button>
-     </div>
-`).join('');
+
+function renderServiceOptions(items) {
+    if (!serviceSelect) return;
+    serviceSelect.innerHTML = '';
+    items.forEach(service => {
+        const option = document.createElement('option');
+        option.value = service.id;
+        option.textContent = `${service.name}, От ${service.price} BYN`;
+        serviceSelect.appendChild(option);
+    });
+}
+
+async function loadServices() {
+    try {
+        const response = await fetch(`${API_BASE}/services`);
+        if (!response.ok) throw new Error('Ошибка загрузки услуг');
+        services = await response.json();
+
+        renderCards(services);
+        renderServiceOptions(services);
+        renderBooking();
+    } catch (error) {
+        console.error('Не удалось получить услуги с сервера:', error);
+        if (container) {
+            container.innerHTML = '<p style="color: #ff4d4f;">❌ Ошибка загрузки услуг. Проверьте, запущен ли сервер.</p>';
+        }
+    }
+}
+loadServices();
 
 let selectedIds = [];
 const sumOutput = document.getElementById('sum');
-container.addEventListener('click', () => {
+container.addEventListener('click', (event) => {
     const btn = event.target.closest('.btn');
+    if (!btn) return;
     const card = btn.closest('.card');
     card.classList.toggle('selected');
     const id = Number(card.dataset.id);
-    if (card.classList.contains('selected')){
+    if (card.classList.contains('selected')) {
         btn.textContent = 'Выбрано';
         selectedIds.push(id);
-    }
-    else{
-        btn.textContent = 'Выбрать'
+    } else {
+        btn.textContent = 'Выбрать';
         selectedIds = selectedIds.filter(itemId => itemId !== id);
     }
     const selectedServices = services.filter(service => selectedIds.includes(service.id));
-    const totalSum = selectedServices.reduce((sum, service) => sum + service.price, 0); 
+    const totalSum = selectedServices.reduce((sum, service) => sum + service.price, 0);
     if (selectedServices.length === 0) {
         sumOutput.textContent = 'Выберите услугу';
     } else {
@@ -44,8 +58,7 @@ container.addEventListener('click', () => {
 });
 
 const searchInput = document.getElementById('search-input');
-
-function renderCards(items){
+function renderCards(items) {
     container.innerHTML = items.map(service => `
     <div class="card ${selectedIds.includes(service.id) ? 'selected' : ''}" data-id='${service.id}'>
         <strong>${service.name}</strong>
@@ -66,7 +79,6 @@ searchInput.addEventListener('input', event => {
     );
     renderCards(fitlerServices);
 });
-renderCards(services)
 
 const sortBtn = document.getElementById('sort-btn');
 let sortOrder = 'default';
@@ -76,41 +88,30 @@ sortBtn.addEventListener('click', () => {
         sortOrder = 'asc';
         sortedServices.sort((a, b) => a.price - b.price);
         sortBtn.textContent = 'Цена: по возрастанию ↑';
-    }
-    else if (sortOrder === 'asc'){
+    } else if (sortOrder === 'asc') {
         sortOrder = 'desc';
         sortedServices.sort((a, b) => b.price - a.price);
         sortBtn.textContent = 'Цена: по убыванию ↓';
-    }
-    else{
+    } else {
         sortOrder = 'default';
-        sortBtn.textContent = 'Сортировка: по умолчанию'
+        sortBtn.textContent = 'Сортировка: по умолчанию';
     }
     renderCards(sortedServices);
 });
 
-const serviceSelect = document.getElementById('service-select');
-const bookingForm = document.getElementById('booking');
-services.forEach(service => {
-    const option = document.createElement('option');
-    option.value = service.id;
-    option.textContent = `${service.name}, От ${service.price} BYN`;
-    serviceSelect.appendChild(option);
-})
-
-function showError (input, message){
+function showError(input, message) {
     input.classList.add('error');
     const errorSpan = input.parentElement.querySelector('.error-text');
     if (errorSpan) errorSpan.textContent = message;
 }
 
-function clearError (input){
+function clearError(input) {
     input.classList.remove('error');
     const errorSpan = input.parentElement.querySelector('.error-text');
     if (errorSpan) errorSpan.textContent = '';
 }
 
-bookingForm.addEventListener('submit', async (event) =>{
+bookingForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     let isValid = true;
     const nameInput = bookingForm.elements['clientName'];
@@ -118,8 +119,8 @@ bookingForm.addEventListener('submit', async (event) =>{
     const dateInput = bookingForm.elements['date'];
     const timeInput = bookingForm.elements['time'];
     [nameInput, phoneInput, dateInput, timeInput].forEach(clearError);
-    if (nameInput.value.trim() === ''){
-        showError(nameInput,'Введите ваше имя');
+    if (nameInput.value.trim() === '') {
+        showError(nameInput, 'Введите ваше имя');
         isValid = false;
     }
     const digitOnly = phoneInput.value.replace(/\D/g, '');
@@ -127,7 +128,7 @@ bookingForm.addEventListener('submit', async (event) =>{
         showError(phoneInput, 'Телефон должен содержать минимум 10 цифр');
         isValid = false;
     }
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T');
     if (!dateInput.value) {
         showError(dateInput, 'Выберите дату');
         isValid = false;
@@ -136,7 +137,7 @@ bookingForm.addEventListener('submit', async (event) =>{
         isValid = false;
     }
     if (!timeInput.value) {
-        showError(timeInput, 'Введите время')
+        showError(timeInput, 'Введите время');
         isValid = false;
     }
     if (isValid) {
@@ -155,14 +156,12 @@ bookingForm.addEventListener('submit', async (event) =>{
         bookings.push(newBooking);
         localStorage.setItem('bookings', JSON.stringify(bookings));
         renderBooking();
-        const selectedService = services.find(s => s.id === newBooking.serviceId);
-        const serviceName = selectedService ? selectedService.name : 'Услуга не указана';
-        const postUrl = 'https://jsonplaceholder.typicode.com/posts';
+        const postUrl = `${API_BASE}/bookings`;
         const submitBtn = bookingForm.querySelector('button');
         const originalBtnText = submitBtn ? submitBtn.textContent : 'Записаться';
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.textContent = '⏳ Загрузка...';
+            submitBtn.textContent = '⏳ Отправка...';
         }
         try {
             const response = await fetch(postUrl, {
@@ -170,20 +169,15 @@ bookingForm.addEventListener('submit', async (event) =>{
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    title: `Запись: ${newBooking.name}`,
-                    body: `${serviceName} | Телефон: ${newBooking.phone} | Дата: ${newBooking.date} ${newBooking.time}`,
-                    userId: 1
-                })
+                body: JSON.stringify(newBooking)
             });
-            console.log('Статус ответа:', response.status);
             if (!response.ok) {
                 throw new Error(`Сервер вернул статус ${response.status}`);
             }
             const serverData = await response.json();
-            console.log('Ответ сервера:', serverData);
+            console.log('Ответ твоего сервера:', serverData);
             bookingForm.reset();
-            alert('Запись создана');
+            alert('Запись создана!');
         } catch (error) {
             console.error('Ошибка отправки POST-запроса:', error);
             alert('Ошибка при отправке заявки');
@@ -207,7 +201,7 @@ function renderBooking() {
     }
     bookingList.innerHTML = bookings.map((booking, index) => {
         if (editingIndex === index) {
-            const serviceOptions = services.map(s => 
+            const serviceOptions = services.map(s =>
                 `<option value="${s.id}" ${s.id === booking.serviceId ? 'selected' : ''}>${s.name}</option>`
             ).join('');
             return `
@@ -259,6 +253,7 @@ function updateHeaderStats() {
     }, 0);
     headerStats.textContent = `Всего записей: ${bookings.length} | На сумму: ${totalSum} BYN`;
 }
+
 bookingList.addEventListener('click', (event) => {
     const deleteBtn = event.target.closest('.delete-btn');
     const editBtn = event.target.closest('.edit-btn');
@@ -302,7 +297,7 @@ const jokeSetup = document.getElementById('joke-setup');
 const jokePunchline = document.getElementById('joke-punchline');
 const newJokeBtn = document.getElementById('new-joke-btn');
 async function getJoke() {
-    const url = 'https://official-joke-api.appspot.com/random_joke';
+    const url = ['https://v2.', 'jokeapi.dev', '/joke/Programming', '?type=twopart'].join('');
     jokeSetup.textContent = '⏳ Загрузка...';
     jokePunchline.textContent = '';
     if (newJokeBtn) newJokeBtn.disabled = true;
@@ -311,7 +306,7 @@ async function getJoke() {
         if (!res.ok) throw new Error('Ошибка сервера');
         const joke = await res.json();
         jokeSetup.textContent = joke.setup;
-        jokePunchline.textContent = joke.punchline;
+        jokePunchline.textContent = joke.delivery;
     } catch (error) {
         jokeSetup.textContent = 'Не удалось загрузить шутку. Попробуйте позже.';
         jokePunchline.textContent = '';
