@@ -110,7 +110,7 @@ function clearError (input){
     if (errorSpan) errorSpan.textContent = '';
 }
 
-bookingForm.addEventListener('submit', (event) =>{
+bookingForm.addEventListener('submit', async (event) =>{
     event.preventDefault();
     let isValid = true;
     const nameInput = bookingForm.elements['clientName'];
@@ -140,7 +140,7 @@ bookingForm.addEventListener('submit', (event) =>{
         isValid = false;
     }
     if (isValid) {
-        const newBoking = {
+        const newBooking = {
             name: nameInput.value.trim(),
             phone: phoneInput.value.trim(),
             serviceId: Number(serviceSelect.value),
@@ -148,17 +148,54 @@ bookingForm.addEventListener('submit', (event) =>{
             time: timeInput.value,
             problem: bookingForm.elements['problem-description'].value.trim(),
             status: 'Новая',
-            createddAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
             _mricToken: "d4-" + Date.now()
         };
         const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
-        bookings.push(newBoking);
+        bookings.push(newBooking);
         localStorage.setItem('bookings', JSON.stringify(bookings));
-        bookingForm.reset();
         renderBooking();
-        alert('Запись создана');
+        const selectedService = services.find(s => s.id === newBooking.serviceId);
+        const serviceName = selectedService ? selectedService.name : 'Услуга не указана';
+        const postUrl = 'https://jsonplaceholder.typicode.com/posts';
+        const submitBtn = bookingForm.querySelector('button');
+        const originalBtnText = submitBtn ? submitBtn.textContent : 'Записаться';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Загрузка...';
+        }
+        try {
+            const response = await fetch(postUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: `Запись: ${newBooking.name}`,
+                    body: `${serviceName} | Телефон: ${newBooking.phone} | Дата: ${newBooking.date} ${newBooking.time}`,
+                    userId: 1
+                })
+            });
+            console.log('Статус ответа:', response.status);
+            if (!response.ok) {
+                throw new Error(`Сервер вернул статус ${response.status}`);
+            }
+            const serverData = await response.json();
+            console.log('Ответ сервера:', serverData);
+            bookingForm.reset();
+            alert('Запись создана');
+        } catch (error) {
+            console.error('Ошибка отправки POST-запроса:', error);
+            alert('Ошибка при отправке заявки');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
+        }
     }
 });
+
 const bookingList = document.getElementById('booking-list');
 let editingIndex = null;
 function renderBooking() {
@@ -211,6 +248,7 @@ function renderBooking() {
     }).join('');
 }
 renderBooking();
+
 function updateHeaderStats() {
     const headerStats = document.getElementById('header-stats');
     if (!headerStats) return;
@@ -259,3 +297,30 @@ bookingList.addEventListener('click', (event) => {
         renderBooking();
     }
 });
+
+const jokeSetup = document.getElementById('joke-setup');
+const jokePunchline = document.getElementById('joke-punchline');
+const newJokeBtn = document.getElementById('new-joke-btn');
+async function getJoke() {
+    const url = 'https://official-joke-api.appspot.com/random_joke';
+    jokeSetup.textContent = '⏳ Загрузка...';
+    jokePunchline.textContent = '';
+    if (newJokeBtn) newJokeBtn.disabled = true;
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Ошибка сервера');
+        const joke = await res.json();
+        jokeSetup.textContent = joke.setup;
+        jokePunchline.textContent = joke.punchline;
+    } catch (error) {
+        jokeSetup.textContent = 'Не удалось загрузить шутку. Попробуйте позже.';
+        jokePunchline.textContent = '';
+        console.error('Ошибка API:', error);
+    } finally {
+        if (newJokeBtn) newJokeBtn.disabled = false;
+    }
+}
+getJoke();
+if (newJokeBtn) {
+    newJokeBtn.addEventListener('click', getJoke);
+}

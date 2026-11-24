@@ -234,6 +234,23 @@ a:hover{
     font-family: inherit;
     box-sizing: border-box;
 }
+.joke-section {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 0 20px;
+    text-align: center;
+}
+.joke-section h2 {
+    margin-bottom: 16px;
+}
+.joke-card {
+    align-items: center;
+    gap: 10px;
+}
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
 :root{
     --primary: #2d3436;
     --accent: #0984e3;
