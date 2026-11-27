@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запись на ремонт — Компьютерная мастерская</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="top-panel">
+            <div class="logo">
+                <div class="logo-icon">🔧</div>
+                <span>КомпМастер</span/>
+            </div>
+            <nav>
+                <a href="index.html">🏠 Главная</a> |
+                <a href="booking.html">📝 Записаться</a> |
+                <a href="my-bookings.html">📋 Мои записи</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="booking-section">
+            <h2>Оставить заявку</h2>
+            <div>
+                <form id="booking" class="booking-form">
+                    <label>
+                        Ваше имя:
+                        <input type="text" name="clientName" placeholder="Ваше имя">
+                        <span class="error-text"></span>
+                    </label>
+                    <label>
+                        Телефон:
+                        <input type="tel" name="phone" placeholder="+375291234567">
+                        <span class="error-text"></span>
+                    </label>
+                    <label>
+                        Услуга:
+                        <select name="services" id="service-select">
+                            <option value="">Выберите услугу</option>
+                            <span class="error-text"></span>
+                        </select>
+                    </label>
+                    <label>
+                        Желаемая дата:
+                        <input type="date" name="date">
+                        <span class="error-text"></span>
+                    </label>
+                    <label>
+                        Время:
+                        <input type="time" name="time">
+                        <span class="error-text"></span>
+                    </label>
+                    <label>
+                        Описание проблемы:
+                        <textarea name="problem-description" id="problem-description" rows="4" placeholder="Опишите неисправность..."></textarea>
+                    </label>
+                    <button type="submit" class="book-btn">Записаться</button>
+                </form>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p style="text-align: center; color: #777; font-size: 0.9rem; margin-top: 40px;">© 2026 Компьютерная мастерская</p>
+        <span style="display: none;" data-mric="d9" data-student="Мурашко Артём Александрович"></span>
+    </footer>
+    <script src="add.js"></script>
+    <footer>
+        <strong>КомпМастер</strong>
+        <span>Ремонт ПК, ноутбуков и оргтехники</span>
+        © 2026 КомпМастер. Все права защищены.
+        Информация на сайте не является публичной офертой.
+        <span style="display: none;" data-mric="d9" data-student="Мурашко Артём Александрович"></span>
+    </footer>
+</body>
+</html>

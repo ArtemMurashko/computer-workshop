@@ -9,6 +9,7 @@ app.use((req, res, next) => {
 });
 app.use('/api/services', require('./routes/services'));
 app.use('/api/bookings', require('./routes/bookings'));
+app.use(express.static('../public'));
 app.get('/api/stats', (req, res) => {
     const totalBookings = db.prepare('SELECT COUNT(*) AS count FROM bookings').get().count;
     const byStatus = db.prepare('SELECT status, COUNT(*) AS count FROM bookings GROUP BY status').all();
@@ -32,4 +33,4 @@ app.get('/api/health', (req, res) => {
         day: 6
     });
 });
-app.listen(3000, () => console.log('http://localhost:3000/api/services'));
+app.listen(3000, () => console.log('http://localhost:3000'));
